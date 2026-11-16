@@ -57,7 +57,21 @@ public class AppUser {
     @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    protected AppUser() {}
+    protected AppUser() {} // JPA only
+
+    /** The only way application code creates a user: all required fields up front, so it can never be half-built. */
+    public AppUser(String email, String passwordHash, Role role, String fullName, LocalDate birthDate,
+                   Sex sex, int heightCm, BigDecimal weightKg, ActivityLevel activityLevel) {
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.role = role;
+        this.fullName = fullName;
+        this.birthDate = birthDate;
+        this.sex = sex;
+        this.heightCm = heightCm;
+        this.weightKg = weightKg;
+        this.activityLevel = activityLevel;
+    }
 
     public Long getId() { return id; }
     public String getEmail() { return email; }

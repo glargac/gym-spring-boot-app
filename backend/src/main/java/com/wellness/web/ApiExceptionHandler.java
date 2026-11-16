@@ -1,5 +1,6 @@
 package com.wellness.web;
 
+import com.wellness.user.EmailAlreadyUsedException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,12 @@ public class ApiExceptionHandler {
         ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Validation failed");
         pd.setProperty("errors", errors);
         return pd;
+    }
+
+    /** 409 Conflict: the request is valid but clashes with existing state. */
+    @ExceptionHandler(EmailAlreadyUsedException.class)
+    public ProblemDetail onEmailTaken(EmailAlreadyUsedException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
     }
 
     /** Malformed JSON, wrong types or an unknown enum value. The message is generic on purpose: the raw one leaks internals. */
