@@ -1,5 +1,6 @@
 package com.wellness.web;
 
+import com.wellness.security.InvalidCredentialsException;
 import com.wellness.user.EmailAlreadyUsedException;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -36,6 +37,11 @@ public class ApiExceptionHandler {
         ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Validation failed");
         pd.setProperty("errors", Map.of(ex.getField(), ex.getMessage()));
         return pd;
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ProblemDetail onBadCredentials(InvalidCredentialsException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
     }
 
     /** 409 Conflict: the request is valid but clashes with existing state. */

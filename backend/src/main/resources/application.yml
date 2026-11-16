@@ -12,3 +12,12 @@ spring:
     open-in-view: false
   flyway:
     enabled: true
+
+app:
+  jwt:
+    # Set WELLNESS_JWT_SECRET (>= 32 chars) in any shared environment. Empty = random key per start (dev: tokens die on restart).
+    secret: ${WELLNESS_JWT_SECRET:}
+    ttl: 1h
+  admin:
+    # Empty = a random admin password is generated and logged once when the seeded admin still has the placeholder hash.
+    initial-password: ${WELLNESS_ADMIN_PASSWORD:}

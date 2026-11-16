@@ -73,6 +73,11 @@ public class AppUser {
         this.activityLevel = activityLevel;
     }
 
+    /** A named behavior instead of a generic setPasswordHash: the only thing allowed to change after creation so far. */
+    public void changePasswordHash(String newHash) {
+        this.passwordHash = newHash;
+    }
+
     public Long getId() { return id; }
     public String getEmail() { return email; }
     public String getPasswordHash() { return passwordHash; }
