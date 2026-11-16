@@ -25,6 +25,19 @@ public class ApiExceptionHandler {
         return pd;
     }
 
+    @ExceptionHandler(NotFoundException.class)
+    public ProblemDetail onNotFound(NotFoundException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    /** Same shape as a Bean Validation failure, so clients handle one error format. */
+    @ExceptionHandler(UnknownCodeException.class)
+    public ProblemDetail onUnknownCode(UnknownCodeException ex) {
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Validation failed");
+        pd.setProperty("errors", Map.of(ex.getField(), ex.getMessage()));
+        return pd;
+    }
+
     /** 409 Conflict: the request is valid but clashes with existing state. */
     @ExceptionHandler(EmailAlreadyUsedException.class)
     public ProblemDetail onEmailTaken(EmailAlreadyUsedException ex) {

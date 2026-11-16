@@ -50,7 +50,24 @@ public class UserPreference {
     @Column(name = "excluded_foods", length = 255)
     private String excludedFoods;
 
-    protected UserPreference() {}
+    protected UserPreference() {} // JPA only
+
+    public UserPreference(AppUser user, Goal goal, TrainingLocation location, int daysPerWeek,
+                          BigDecimal hoursPerDay, DietType dietType, String excludedFoods) {
+        this.user = user; // @MapsId copies the user's id into userId on persist
+        change(goal, location, daysPerWeek, hoursPerDay, dietType, excludedFoods);
+    }
+
+    /** A behavior method instead of six setters: the object changes as one coherent unit (rich domain model). */
+    public void change(Goal goal, TrainingLocation location, int daysPerWeek,
+                       BigDecimal hoursPerDay, DietType dietType, String excludedFoods) {
+        this.goal = goal;
+        this.location = location;
+        this.daysPerWeek = daysPerWeek;
+        this.hoursPerDay = hoursPerDay;
+        this.dietType = dietType;
+        this.excludedFoods = excludedFoods;
+    }
 
     public Long getUserId() { return userId; }
     public AppUser getUser() { return user; }
