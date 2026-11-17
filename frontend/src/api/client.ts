@@ -1,6 +1,11 @@
 import type {
+  CatalogItem,
+  CatalogItemRequest,
+  CatalogResource,
   DietType,
   Goal,
+  MealPlanAdmin,
+  MealPlanRequest,
   PreferencesRequest,
   PreferencesResponse,
   Recommendation,
@@ -8,6 +13,8 @@ import type {
   TokenResponse,
   TrainingLocation,
   UserResponse,
+  WorkoutTemplateAdmin,
+  WorkoutTemplateRequest,
 } from './types'
 
 const BASE_URL: string = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
@@ -89,4 +96,26 @@ export const api = {
   savePreferences: (userId: number, body: PreferencesRequest) =>
     request<PreferencesResponse>('PUT', `/api/users/${userId}/preferences`, body),
   recommendation: (userId: number) => request<Recommendation>('GET', `/api/users/${userId}/recommendation`),
+
+  // ---- admin (the server rejects these for non-admins with 403; the UI only hides them) ----
+  catalog: (resource: CatalogResource) => request<CatalogItem[]>('GET', `/api/${resource}`),
+  saveCatalogItem: (resource: CatalogResource, code: string, body: CatalogItemRequest) =>
+    request<CatalogItem>('PUT', `/api/admin/${resource}/${encodeURIComponent(code)}`, body),
+  deleteCatalogItem: (resource: CatalogResource, code: string) =>
+    request<void>('DELETE', `/api/admin/${resource}/${encodeURIComponent(code)}`),
+
+  workoutTemplates: () => request<WorkoutTemplateAdmin[]>('GET', '/api/admin/workout-templates'),
+  workoutTemplate: (id: number) => request<WorkoutTemplateAdmin>('GET', `/api/admin/workout-templates/${id}`),
+  createWorkoutTemplate: (body: WorkoutTemplateRequest) =>
+    request<WorkoutTemplateAdmin>('POST', '/api/admin/workout-templates', body),
+  updateWorkoutTemplate: (id: number, body: WorkoutTemplateRequest) =>
+    request<WorkoutTemplateAdmin>('PUT', `/api/admin/workout-templates/${id}`, body),
+  deleteWorkoutTemplate: (id: number) => request<void>('DELETE', `/api/admin/workout-templates/${id}`),
+
+  mealPlans: () => request<MealPlanAdmin[]>('GET', '/api/admin/meal-plans'),
+  mealPlan: (id: number) => request<MealPlanAdmin>('GET', `/api/admin/meal-plans/${id}`),
+  createMealPlan: (body: MealPlanRequest) => request<MealPlanAdmin>('POST', '/api/admin/meal-plans', body),
+  updateMealPlan: (id: number, body: MealPlanRequest) =>
+    request<MealPlanAdmin>('PUT', `/api/admin/meal-plans/${id}`, body),
+  deleteMealPlan: (id: number) => request<void>('DELETE', `/api/admin/meal-plans/${id}`),
 }

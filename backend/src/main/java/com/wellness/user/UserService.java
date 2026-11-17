@@ -1,5 +1,6 @@
 package com.wellness.user;
 
+import com.wellness.web.DbErrors;
 import java.util.Locale;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -42,7 +43,12 @@ public class UserService {
             return users.saveAndFlush(user);
         } catch (DataIntegrityViolationException e) {
             // check-then-insert is a race: two concurrent requests can both pass existsByEmail. The DB constraint is the real guard.
-            throw new EmailAlreadyUsedException(email);
+            // Only a UNIQUE violation means "email taken". Any other integrity error is a bug or a schema mismatch,
+            // so it must surface as itself instead of being disguised as a duplicate email.
+            if (DbErrors.isUniqueViolation(e)) {
+                throw new EmailAlreadyUsedException(email);
+            }
+            throw e;
         }
     }
 }

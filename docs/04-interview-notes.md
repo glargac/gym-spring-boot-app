@@ -1,4 +1,4 @@
-# Interview Notes (steps 0 to 5 and the pattern refactor)
+# Interview Notes (steps 0 to 5, pattern refactor, admin screens)
 
 Format for every step: **concept → likely question → honest critique of the code**. In the interview you will see working but flawed code, so the critique is the main exercise.
 
@@ -119,9 +119,24 @@ Controller (HTTP) → service (rules) → repository (data). `@Valid` on the DTO
 - **Test Data Builder** (`Registrations.aRegistration().email(..).build()`): every test starts from a valid default and names only what matters. An *Object Mother* (static factories like `anAdultUser()`) grows one method per variant; a builder composes variants.
 - **Related smell still open:** `HealthMetricsService.calculate(sex, birthDate, heightCm, weightKg, level)` (section 6). A Parameter Object (a record) is the fix there, not a Builder.
 
+## 17. Admin screens and a bug worth remembering
+**A bug I introduced (and what it teaches).** Registration caught `DataIntegrityViolationException` and always answered "email already registered". A CHECK-constraint failure then showed up as a fake duplicate email, and the real cause was only visible in the server log. Fix: look at the **SQLSTATE** (`23505` unique, `23503` foreign key; H2 and PostgreSQL share them) and rethrow anything else (`web/DbErrors`).
+- **Likely question:** "How do you handle a unique-constraint race?" Let the database be the guard, catch the *specific* violation, and map only that to a 409.
+- **Rule:** never catch a broad exception and assume its cause. A wrong, confident message is worse than a generic 500.
+- **Operational lesson:** running `mvn test` while the app runs from the same `target/classes` mixed old and new classes in the live JVM and produced that CHECK failure. Stop the app first, or build to a different directory.
+
+**Frontend (admin area).**
+- **Role-gated routes are UX only:** `AdminLayout` shows "Admins only" to a normal user, but the server returns 403 on every `/api/admin/**` call without an ADMIN token (verified with a user token).
+- **Controlled forms with nested lists:** state holds strings, updates are immutable (`map`/`filter`, never `push` on state), and numbers are converted once on submit. The number of day blocks *is* the "days per week" value, so the backend rule (exactly n days numbered 1..n) cannot be broken from the UI.
+- **`key` to reset state:** `<WorkoutForm key={templateId ?? 'new'} />` makes React mount a fresh form when another template opens, instead of reusing stale state.
+- **Server errors map back to inputs:** the backend's `days[0].exercises[1].name` keys match the form structure, so each message appears under its own field; the rest go to a summary.
+- **Inline two-step delete instead of `window.confirm`:** the native dialog blocks the page, can't be styled, is worse for assistive tech and freezes automated browsers.
+- **Flaws:** no optimistic updates or concurrency control (two admins editing the same template: last write wins, so a `version` column with optimistic locking would be the fix); lists are not paginated; the form has no unsaved-changes warning; none of this UI has automated tests.
+
 ## Coming next
 1. Observer with `ApplicationEventPublisher` ("user registered")
 2. Move to Supabase Postgres: transactions, indexes, connection pooling, and why H2 can hide Postgres differences
-3. Frontend tests, admin screens, refresh tokens and login rate limiting
-4. Parameter Object for `HealthMetricsService.calculate`, value objects for height and weight
-5. Concurrency: virtual threads, `CompletableFuture`
+3. Frontend tests (Vitest + Testing Library), refresh tokens and login rate limiting
+4. Optimistic locking (`@Version`) for the admin editors
+5. Parameter Object for `HealthMetricsService.calculate`, value objects for height and weight
+6. Concurrency: virtual threads, `CompletableFuture`

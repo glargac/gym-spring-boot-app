@@ -10,6 +10,7 @@ import com.wellness.catalog.TrainingLocation;
 import com.wellness.catalog.TrainingLocationRepository;
 import com.wellness.catalog.TrainingLocationResponse;
 import com.wellness.web.ConflictException;
+import com.wellness.web.DbErrors;
 import com.wellness.web.InvalidFieldException;
 import com.wellness.web.NotFoundException;
 import java.util.regex.Pattern;
@@ -95,7 +96,10 @@ public class AdminCatalogService {
             repository.delete(entity);
             repository.flush();
         } catch (DataIntegrityViolationException e) {
-            throw new ConflictException("The " + label + " '" + code + "' is still in use and cannot be deleted");
+            if (DbErrors.isForeignKeyViolation(e)) {
+                throw new ConflictException("The " + label + " '" + code + "' is still in use and cannot be deleted");
+            }
+            throw e; // not a foreign-key problem: do not claim it is
         }
     }
 

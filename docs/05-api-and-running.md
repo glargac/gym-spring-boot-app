@@ -5,7 +5,7 @@
 # Backend (Spring Boot 4.1, Java 25). `java` is not linked system-wide on this machine, so point JAVA_HOME at the Homebrew JDK:
 cd backend
 JAVA_HOME=/opt/homebrew/opt/openjdk@25 mvn spring-boot:run     # http://localhost:8080
-JAVA_HOME=/opt/homebrew/opt/openjdk@25 mvn test                # 37 tests
+JAVA_HOME=/opt/homebrew/opt/openjdk@25 mvn test                # 38 tests
 
 # Frontend (Vite + React + TypeScript)
 cd frontend
@@ -23,7 +23,9 @@ The database is **in-memory H2**: every backend restart wipes users and preferen
 | `WELLNESS_CORS_ORIGINS` | `http://localhost:5173` | Browser origins allowed to call the API. |
 | `VITE_API_URL` (frontend) | `http://localhost:8080` | Where the frontend sends requests. |
 
-The generated admin password appears in the startup log: `Generated admin password for admin@wellness.local ...`.
+The generated admin password appears in the startup log: `Generated admin password for admin@wellness.local ...`. Log in with that account in the frontend to see the **Admin** link.
+
+> **Tip:** do not run `mvn test` while the app is running. Both use `backend/target/classes`, and the live JVM can end up with a mix of old and new classes (it caused a confusing CHECK-constraint error once). Stop the app first.
 
 ## Endpoints
 | Method and path | Who | What |
@@ -69,5 +71,6 @@ frontend/src/
   api/       typed fetch client + DTO types
   auth/      AuthProvider, JWT decoding (UI only), useAuth
   pages/     Home, Login, Register, Preferences, Recommendation
-  components/ Layout, ProtectedRoute, Field
+  pages/admin/ AdminLayout (role gate + tabs), catalogs, workout templates, meal plans (lists + editors)
+  components/ Layout, ProtectedRoute, Field, ConfirmDelete, ErrorSummary
 ```

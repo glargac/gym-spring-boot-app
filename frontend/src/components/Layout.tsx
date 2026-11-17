@@ -24,6 +24,7 @@ export function Layout() {
             <>
               <NavLink to="/preferences">My preferences</NavLink>
               <NavLink to="/recommendation">My plan</NavLink>
+              {session.role === 'ADMIN' && <NavLink to="/admin">Admin</NavLink>}
               <span className="badge" title="Your role, read from the access token">
                 {session.role}
               </span>

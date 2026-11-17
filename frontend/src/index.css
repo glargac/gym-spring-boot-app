@@ -374,9 +374,129 @@ button:disabled {
   border-radius: 999px;
 }
 
+/* ---------- admin ---------- */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  margin-top: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.tabs a {
+  padding: 0.5rem 0;
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.tabs a:hover,
+.tabs a.active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+
+.table-wrap {
+  overflow-x: auto; /* a wide table scrolls inside its card instead of the whole page */
+  margin: 0.75rem 0;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+.table th,
+.table td {
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.table th {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.row-actions button,
+.row-actions .button {
+  min-height: 2.25rem;
+  padding: 0.25rem 0.75rem;
+}
+code {
+  font-size: 0.85em;
+  padding: 0.1rem 0.35rem;
+  background: var(--surface-2);
+  border-radius: 6px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+.inline-form {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+.editor-block {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.editor-block legend {
+  padding: 0 0.5rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+.exercise-row,
+.meal-row {
+  display: grid;
+  gap: 0.75rem;
+  align-items: end;
+}
+.exercise-row {
+  grid-template-columns: 2fr 6rem 1fr auto;
+}
+.meal-row {
+  grid-template-columns: 9rem 2fr 6rem auto;
+}
+.confirm {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+button.danger {
+  color: #fff;
+  background: var(--danger);
+  border-color: var(--danger);
+}
+.danger-text {
+  min-height: 2.25rem;
+  background: none;
+  border: none;
+  color: var(--danger);
+  font-weight: 600;
+}
+.error-list {
+  margin: 0.25rem 0 0;
+  padding-left: 1.25rem;
+}
+
 /* ---------- small screens ---------- */
 @media (max-width: 560px) {
-  .grid-2 {
+  .grid-2,
+  .grid-3,
+  .exercise-row,
+  .meal-row {
     grid-template-columns: 1fr;
   }
   .meals li {

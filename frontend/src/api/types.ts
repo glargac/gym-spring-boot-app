@@ -109,3 +109,58 @@ export interface Recommendation {
   mealPlan: MealPlanView | null
   notes: string[]
 }
+
+// ---------------------------------------------------------------------------------------------
+// Admin API (/api/admin/**). Requests and responses differ slightly: the meal request calls the
+// field "mealType" while the response calls it "type", mirroring the backend records exactly.
+// ---------------------------------------------------------------------------------------------
+
+export type MealType = 'BREAKFAST' | 'LUNCH' | 'SNACK' | 'DINNER'
+export type CatalogResource = 'goals' | 'diet-types' | 'training-locations'
+
+/** One row of any catalog. Training locations have no description. */
+export interface CatalogItem {
+  code: string
+  name: string
+  description?: string | null
+}
+
+export interface CatalogItemRequest {
+  name: string
+  description: string | null
+}
+
+export interface WorkoutTemplateRequest {
+  goalCode: string
+  locationCode: string
+  daysPerWeek: number
+  name: string
+  days: DayView[] // same shape the user-facing plan uses: dayIndex, focus, exercises
+}
+
+export interface WorkoutTemplateAdmin extends WorkoutTemplateRequest {
+  id: number
+}
+
+export interface MealRequest {
+  mealType: MealType
+  description: string
+  kcal: number
+}
+
+export interface MealPlanRequest {
+  goalCode: string
+  dietTypeCode: string
+  kcalAdjust: number
+  name: string
+  meals: MealRequest[]
+}
+
+export interface MealPlanAdmin {
+  id: number
+  goalCode: string
+  dietTypeCode: string
+  kcalAdjust: number
+  name: string
+  meals: MealView[]
+}

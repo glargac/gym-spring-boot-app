@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +43,17 @@ class UserServiceTest {
 
         assertThatThrownBy(() -> service.register(request("ANA@example.com")))
                 .isInstanceOf(EmailAlreadyUsedException.class);
+    }
+
+    @Test
+    void anIntegrityErrorThatIsNotAUniqueViolationIsNotReportedAsADuplicateEmail() {
+        // 200 characters for a VARCHAR(120): the DB refuses it (SQLSTATE 22001). Calling the service directly skips
+        // the controller's @Size check, which is exactly how a mismatch between validation and schema would slip through.
+        RegisterUserRequest tooLong = aRegistration().email("long@example.com").fullName("x".repeat(200)).build();
+
+        assertThatThrownBy(() -> service.register(tooLong))
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .isNotInstanceOf(EmailAlreadyUsedException.class);
     }
 
     @Test
