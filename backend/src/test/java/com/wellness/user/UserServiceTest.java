@@ -1,11 +1,11 @@
 package com.wellness.user;
 
+import static com.wellness.support.Registrations.aRegistration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.wellness.health.HealthMetricsService.ActivityLevel;
 import com.wellness.health.HealthMetricsService.Sex;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +21,8 @@ class UserServiceTest {
     @Autowired PasswordEncoder encoder;
 
     private RegisterUserRequest request(String email) {
-        return new RegisterUserRequest(email, "s3cret-pass", "Ana Lopez", LocalDate.of(1992, 3, 14),
-                Sex.FEMALE, 165, new BigDecimal("60.5"), ActivityLevel.LIGHT);
+        return aRegistration().email(email).fullName("Ana Lopez").birthDate(LocalDate.of(1992, 3, 14))
+                .sex(Sex.FEMALE).heightCm(165).weightKg("60.5").activityLevel(ActivityLevel.LIGHT).build();
     }
 
     @Test

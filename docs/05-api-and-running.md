@@ -5,7 +5,7 @@
 # Backend (Spring Boot 4.1, Java 25). `java` is not linked system-wide on this machine, so point JAVA_HOME at the Homebrew JDK:
 cd backend
 JAVA_HOME=/opt/homebrew/opt/openjdk@25 mvn spring-boot:run     # http://localhost:8080
-JAVA_HOME=/opt/homebrew/opt/openjdk@25 mvn test                # 35 tests
+JAVA_HOME=/opt/homebrew/opt/openjdk@25 mvn test                # 37 tests
 
 # Frontend (Vite + React + TypeScript)
 cd frontend
@@ -62,7 +62,7 @@ backend/src/main/java/com/wellness/
   workout/   WorkoutTemplate -> WorkoutDay -> WorkoutExercise (aggregate)
   meal/      MealPlan -> Meal (aggregate)
   plan/      recommendation engine: Strategy interface + implementations, service, response views
-  admin/     admin CRUD (services, controllers, request records)
+  admin/     admin CRUD: AdminPlanService (Template Method) + workout/meal subclasses, controllers, request records
   security/  SecurityConfig, JWT encode/decode, login, AdminBootstrap, 401/403 JSON handlers
   web/       ApiExceptionHandler + shared exceptions
 frontend/src/

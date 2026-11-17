@@ -8,7 +8,7 @@ Each step = **build one piece** + **study one concept** + **leave one interview 
 | 1 | JPA entities + repositories + "create user" use case | SRP, DIP, DTO vs Entity | Done: entities, catalogs, registration, preferences |
 | 2 | Spring Security + JWT, ADMIN/USER roles | Code smells: Long Method, Large Class | Done: login, roles, ownership checks, CORS |
 | 3 | Recommendation engine (workout + meal plan from preferences) | Strategy, Replace Conditional with Polymorphism | Done with Strategy. A Factory was not needed: Spring injects the ordered list |
-| 4 | Admin CRUD for templates (workouts/meals) | Template Method, Builder, OCP | Backend done. Template Method and Builder were **not** applied yet |
+| 4 | Admin CRUD for templates (workouts/meals) | Template Method, Builder, OCP | Backend done. Template Method (`AdminPlanService`) and Builder (`AppUser.Builder`, test builder) applied in a refactor |
 | 5 | Frontend (Vite + React + TS) | API contract, error handling | User flow done. No admin screens, no frontend tests |
 | 6 | Move to Supabase (Postgres) | Transactions, N+1, indexes | Not started |
 

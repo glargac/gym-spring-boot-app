@@ -1,4 +1,4 @@
-# Interview Notes (steps 0 to 5)
+# Interview Notes (steps 0 to 5 and the pattern refactor)
 
 Format for every step: **concept → likely question → honest critique of the code**. In the interview you will see working but flawed code, so the critique is the main exercise.
 
@@ -106,9 +106,22 @@ Controller (HTTP) → service (rules) → repository (data). `@Valid` on the DTO
 - **TypeScript:** string-literal unions instead of enums (`erasableSyntaxOnly` forbids enums); a union exists only at compile time. `fetch` rejects only on network errors, never on HTTP errors, so the client converts non-2xx answers into `ApiError`.
 - **Accessibility:** labels linked with `useId`, `aria-invalid` and `aria-describedby` for errors, visible focus, 44px touch targets.
 
+## 16. Template Method and Builder (`admin/AdminPlanService`, `AppUser.Builder`, test `Registrations`)
+**Template Method.** `AdminWorkoutService` and `AdminMealPlanService` had the same flow (list, get, create, update, delete). `AdminPlanService<E, REQ, VIEW>` now owns that skeleton and each subclass supplies only the differing steps: `newEntity`, `replaceState`, `toView`, plus an optional `validate` hook.
+- **Likely question:** "Template Method vs. Strategy?" Template Method varies steps through **inheritance** (compile time, one hierarchy, the base class calls the subclass: the Hollywood principle). Strategy varies them through **composition** (swappable at runtime). This repo has both: the recommendation engine is Strategy, the admin CRUD is Template Method.
+- **Spring trap:** the skeleton methods are not `final`. `@Transactional` works through a CGLIB subclass proxy, and a `final` method cannot be overridden by it, so the transaction would be silently skipped.
+- **Abstract step vs. hook:** an abstract method must be implemented; a hook has a default (`validate` does nothing) and is overridden only when needed.
+- **Critique:** inheritance couples subclasses to the base class (fragile base class), and with only two subclasses the rule of three says this is borderline. Over-engineering is also a defect. Composition (a generic `PlanCrud<E>` helper) would work too.
+
+**Builder.** `AppUser` had a 9-argument public constructor (Long Parameter List / telescoping constructor: three Strings and two enums in a row are easy to swap). `AppUser.builder()` uses named steps and `build()` enforces that a user is never half-built. The role defaults to `USER`, so an admin must be asked for explicitly (least privilege).
+- **Likely question:** "Builder vs. constructor vs. setters?" Setters allow a half-built, mutable object. A builder keeps the object immutable-ish and validated in one place.
+- **Critique:** a lot of boilerplate (Lombok's `@Builder` generates it); a JPA entity still needs its protected no-arg constructor; a builder cannot make a compile-time check that every required field was set, only a runtime one. For pure data with many fields a record plus a Parameter Object is often enough.
+- **Test Data Builder** (`Registrations.aRegistration().email(..).build()`): every test starts from a valid default and names only what matters. An *Object Mother* (static factories like `anAdultUser()`) grows one method per variant; a builder composes variants.
+- **Related smell still open:** `HealthMetricsService.calculate(sex, birthDate, heightCm, weightKg, level)` (section 6). A Parameter Object (a record) is the fix there, not a Builder.
+
 ## Coming next
-1. Template Method for plan generation, and Builder for complex objects (promised in roadmap step 4, not applied yet)
-2. Observer with `ApplicationEventPublisher` ("user registered")
-3. Move to Supabase Postgres: transactions, indexes, connection pooling, and why H2 can hide Postgres differences
-4. Frontend tests, admin screens, refresh tokens and login rate limiting
+1. Observer with `ApplicationEventPublisher` ("user registered")
+2. Move to Supabase Postgres: transactions, indexes, connection pooling, and why H2 can hide Postgres differences
+3. Frontend tests, admin screens, refresh tokens and login rate limiting
+4. Parameter Object for `HealthMetricsService.calculate`, value objects for height and weight
 5. Concurrency: virtual threads, `CompletableFuture`

@@ -1,14 +1,13 @@
 package com.wellness.user;
 
+import static com.wellness.support.Registrations.aRegistration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.wellness.health.HealthMetricsService.ActivityLevel;
 import com.wellness.health.HealthMetricsService.Sex;
 import com.wellness.web.NotFoundException;
 import com.wellness.web.UnknownCodeException;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,8 +21,7 @@ class PreferenceServiceTest {
     @Autowired PreferenceService preferences;
 
     private Long newUserId() {
-        return users.register(new RegisterUserRequest("pref@example.com", "s3cret-pass", "Pat", LocalDate.of(1990, 1, 1),
-                Sex.OTHER, 170, new BigDecimal("70"), ActivityLevel.MODERATE)).getId();
+        return users.register(aRegistration().email("pref@example.com").sex(Sex.OTHER).heightCm(170).weightKg("70").build()).getId();
     }
 
     private PreferencesRequest request(String goal, int days) {

@@ -1,5 +1,6 @@
 package com.wellness.plan;
 
+import static com.wellness.support.Registrations.aRegistration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -7,11 +8,9 @@ import com.wellness.health.HealthMetricsService.ActivityLevel;
 import com.wellness.health.HealthMetricsService.Sex;
 import com.wellness.user.PreferenceService;
 import com.wellness.user.PreferencesRequest;
-import com.wellness.user.RegisterUserRequest;
 import com.wellness.user.UserService;
 import com.wellness.web.NotFoundException;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,8 +32,8 @@ class RecommendationServiceTest {
 
     private Long userWith(Sex sex, int heightCm, String weightKg, ActivityLevel level, String goal, String location,
                           String diet, int days, String excluded) {
-        Long id = users.register(new RegisterUserRequest("rec@example.com", "s3cret-pass", "Rec", LocalDate.of(1990, 1, 1),
-                sex, heightCm, new BigDecimal(weightKg), level)).getId();
+        Long id = users.register(aRegistration().email("rec@example.com").sex(sex).heightCm(heightCm)
+                .weightKg(weightKg).activityLevel(level).build()).getId();
         preferences.save(id, new PreferencesRequest(goal, location, diet, days, new BigDecimal("1.5"), excluded));
         return id;
     }
@@ -72,8 +71,7 @@ class RecommendationServiceTest {
         for (String goal : new String[] {"LOSE_WEIGHT", "GAIN_WEIGHT", "BUILD_MUSCLE", "BURN_FAT", "MAINTAIN"}) {
             for (String diet : new String[] {"STANDARD", "KETO", "VEGETARIAN", "VEGAN", "HIGH_PROTEIN", "MEDITERRANEAN"}) {
                 for (String location : new String[] {"GYM", "OUTDOOR", "HOME"}) {
-                    Long id = users.register(new RegisterUserRequest(goal + diet + location + "@example.com", "s3cret-pass",
-                            "Matrix", LocalDate.of(1990, 1, 1), Sex.MALE, 178, new BigDecimal("80"), ActivityLevel.MODERATE)).getId();
+                    Long id = users.register(aRegistration().email(goal + diet + location + "@example.com").build()).getId();
                     preferences.save(id, new PreferencesRequest(goal, location, diet, 3, new BigDecimal("1"), null));
                     var r = recommendations.recommend(id);
                     assertThat(r.workout()).as("workout for %s/%s", goal, location).isNotNull();
@@ -150,8 +148,7 @@ class RecommendationServiceTest {
 
     @Test
     void needsPreferencesFirst() {
-        Long id = users.register(new RegisterUserRequest("nopref@example.com", "s3cret-pass", "NoPref", LocalDate.of(1990, 1, 1),
-                Sex.MALE, 178, new BigDecimal("80"), ActivityLevel.MODERATE)).getId();
+        Long id = users.register(aRegistration().email("nopref@example.com").build()).getId();
 
         assertThatThrownBy(() -> recommendations.recommend(id)).isInstanceOf(NotFoundException.class);
     }

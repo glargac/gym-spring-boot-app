@@ -26,8 +26,17 @@ public class UserService {
             throw new EmailAlreadyUsedException(email);
         }
 
-        AppUser user = new AppUser(email, encoder.encode(r.password()), Role.USER, r.fullName().trim(),
-                r.birthDate(), r.sex(), r.heightCm(), r.weightKg(), r.activityLevel());
+        AppUser user = AppUser.builder()
+                .email(email)
+                .passwordHash(encoder.encode(r.password()))
+                .role(Role.USER) // explicit on purpose: registration never creates an admin
+                .fullName(r.fullName().trim())
+                .birthDate(r.birthDate())
+                .sex(r.sex())
+                .heightCm(r.heightCm())
+                .weightKg(r.weightKg())
+                .activityLevel(r.activityLevel())
+                .build();
         try {
             // flush now so a UNIQUE violation surfaces here, not later at commit time outside this try block
             return users.saveAndFlush(user);

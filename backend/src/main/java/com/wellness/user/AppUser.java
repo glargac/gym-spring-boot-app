@@ -13,6 +13,7 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "app_user")
@@ -59,18 +60,65 @@ public class AppUser {
 
     protected AppUser() {} // JPA only
 
-    /** The only way application code creates a user: all required fields up front, so it can never be half-built. */
-    public AppUser(String email, String passwordHash, Role role, String fullName, LocalDate birthDate,
-                   Sex sex, int heightCm, BigDecimal weightKg, ActivityLevel activityLevel) {
-        this.email = email;
-        this.passwordHash = passwordHash;
-        this.role = role;
-        this.fullName = fullName;
-        this.birthDate = birthDate;
-        this.sex = sex;
-        this.heightCm = heightCm;
-        this.weightKg = weightKg;
-        this.activityLevel = activityLevel;
+    private AppUser(Builder b) {
+        this.email = b.email;
+        this.passwordHash = b.passwordHash;
+        this.role = b.role;
+        this.fullName = b.fullName;
+        this.birthDate = b.birthDate;
+        this.sex = b.sex;
+        this.heightCm = b.heightCm;
+        this.weightKg = b.weightKg;
+        this.activityLevel = b.activityLevel;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
+     * BUILDER pattern. It replaces a 9-argument constructor (the "telescoping constructor" / Long Parameter List smell,
+     * where three Strings and two enums in a row are easy to swap by mistake) with named, readable steps.
+     * build() is the single place that enforces "a user is never half-built".
+     * The role defaults to USER: an admin has to be asked for explicitly (least privilege by default).
+     */
+    public static final class Builder {
+        private String email;
+        private String passwordHash;
+        private Role role = Role.USER;
+        private String fullName;
+        private LocalDate birthDate;
+        private Sex sex;
+        private int heightCm;
+        private BigDecimal weightKg;
+        private ActivityLevel activityLevel;
+
+        private Builder() {}
+
+        public Builder email(String email) { this.email = email; return this; }
+        public Builder passwordHash(String passwordHash) { this.passwordHash = passwordHash; return this; }
+        public Builder role(Role role) { this.role = role; return this; }
+        public Builder fullName(String fullName) { this.fullName = fullName; return this; }
+        public Builder birthDate(LocalDate birthDate) { this.birthDate = birthDate; return this; }
+        public Builder sex(Sex sex) { this.sex = sex; return this; }
+        public Builder heightCm(int heightCm) { this.heightCm = heightCm; return this; }
+        public Builder weightKg(BigDecimal weightKg) { this.weightKg = weightKg; return this; }
+        public Builder activityLevel(ActivityLevel activityLevel) { this.activityLevel = activityLevel; return this; }
+
+        public AppUser build() {
+            Objects.requireNonNull(email, "email is required");
+            Objects.requireNonNull(passwordHash, "passwordHash is required");
+            Objects.requireNonNull(role, "role is required");
+            Objects.requireNonNull(fullName, "fullName is required");
+            Objects.requireNonNull(birthDate, "birthDate is required");
+            Objects.requireNonNull(sex, "sex is required");
+            Objects.requireNonNull(weightKg, "weightKg is required");
+            Objects.requireNonNull(activityLevel, "activityLevel is required");
+            if (heightCm <= 0) {
+                throw new IllegalStateException("heightCm must be positive");
+            }
+            return new AppUser(this);
+        }
     }
 
     /** A named behavior instead of a generic setPasswordHash: the only thing allowed to change after creation so far. */
