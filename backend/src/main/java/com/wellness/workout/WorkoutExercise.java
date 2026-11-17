@@ -34,6 +34,13 @@ public class WorkoutExercise {
 
     protected WorkoutExercise() {}
 
+    public WorkoutExercise(WorkoutDay day, String name, int sets, String reps) {
+        this.day = day;
+        this.name = name;
+        this.sets = sets;
+        this.reps = reps;
+    }
+
     public Long getId() { return id; }
     public WorkoutDay getDay() { return day; }
     public String getName() { return name; }

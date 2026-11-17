@@ -32,8 +32,8 @@ public class ApiExceptionHandler {
     }
 
     /** Same shape as a Bean Validation failure, so clients handle one error format. */
-    @ExceptionHandler(UnknownCodeException.class)
-    public ProblemDetail onUnknownCode(UnknownCodeException ex) {
+    @ExceptionHandler(InvalidFieldException.class) // also catches its subclass UnknownCodeException
+    public ProblemDetail onInvalidField(InvalidFieldException ex) {
         ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Validation failed");
         pd.setProperty("errors", Map.of(ex.getField(), ex.getMessage()));
         return pd;
@@ -42,6 +42,11 @@ public class ApiExceptionHandler {
     @ExceptionHandler(InvalidCredentialsException.class)
     public ProblemDetail onBadCredentials(InvalidCredentialsException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ProblemDetail onConflict(ConflictException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
     }
 
     /** 409 Conflict: the request is valid but clashes with existing state. */

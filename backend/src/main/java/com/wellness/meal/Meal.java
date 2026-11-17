@@ -36,6 +36,13 @@ public class Meal {
 
     protected Meal() {}
 
+    public Meal(MealPlan mealPlan, MealType mealType, String description, int kcal) {
+        this.mealPlan = mealPlan;
+        this.mealType = mealType;
+        this.description = description;
+        this.kcal = kcal;
+    }
+
     public Long getId() { return id; }
     public MealPlan getMealPlan() { return mealPlan; }
     public MealType getMealType() { return mealType; }

@@ -45,6 +45,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/users", "/api/health/assessment").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/goals", "/api/diet-types", "/api/training-locations").permitAll()
+                        // URL-level rule for the whole admin tree: a new admin controller is protected without remembering an annotation
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()) // deny by default: a new endpoint is protected unless someone opens it on purpose
                 .oauth2ResourceServer(oauth -> oauth
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(converter))

@@ -2,6 +2,7 @@ package com.wellness.meal;
 
 import com.wellness.catalog.DietType;
 import com.wellness.catalog.Goal;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -38,11 +39,30 @@ public class MealPlan {
     @Column(nullable = false, length = 120)
     private String name;
 
-    @OneToMany(mappedBy = "mealPlan")
+    @OneToMany(mappedBy = "mealPlan", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("id")
     private List<Meal> meals = new ArrayList<>();
 
     protected MealPlan() {}
+
+    public MealPlan(Goal goal, DietType dietType, int kcalAdjust, String name) {
+        update(goal, dietType, kcalAdjust, name);
+    }
+
+    public void update(Goal goal, DietType dietType, int kcalAdjust, String name) {
+        this.goal = goal;
+        this.dietType = dietType;
+        this.kcalAdjust = kcalAdjust;
+        this.name = name;
+    }
+
+    public void addMeal(Meal meal) {
+        meals.add(meal);
+    }
+
+    public void clearMeals() {
+        meals.clear();
+    }
 
     public Long getId() { return id; }
     public Goal getGoal() { return goal; }

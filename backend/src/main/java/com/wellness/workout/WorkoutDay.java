@@ -1,5 +1,6 @@
 package com.wellness.workout;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import org.hibernate.annotations.BatchSize;
 import jakarta.persistence.Entity;
@@ -33,12 +34,22 @@ public class WorkoutDay {
     @Column(nullable = false, length = 120)
     private String focus;
 
-    @OneToMany(mappedBy = "day")
+    @OneToMany(mappedBy = "day", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("id") // without an explicit order the DB may return rows in any order
     @BatchSize(size = 50) // all three days' exercises load in one query: the N+1 fix that avoids MultipleBagFetchException
     private List<WorkoutExercise> exercises = new ArrayList<>();
 
     protected WorkoutDay() {}
+
+    public WorkoutDay(WorkoutTemplate template, int dayIndex, String focus) {
+        this.template = template;
+        this.dayIndex = dayIndex;
+        this.focus = focus;
+    }
+
+    public void addExercise(WorkoutExercise exercise) {
+        exercises.add(exercise);
+    }
 
     public Long getId() { return id; }
     public WorkoutTemplate getTemplate() { return template; }
