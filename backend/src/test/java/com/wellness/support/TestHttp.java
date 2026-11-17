@@ -20,9 +20,13 @@ public class TestHttp {
         this.port = port;
     }
 
-    public HttpResponse<String> call(String method, String path, String token, String body) throws Exception {
+    public HttpResponse<String> call(String method, String path, String token, String body, String... extraHeaders)
+            throws Exception {
         var builder = HttpRequest.newBuilder(URI.create("http://localhost:" + port + path))
                 .header("Content-Type", "application/json");
+        for (int i = 0; i + 1 < extraHeaders.length; i += 2) { // name, value, name, value...
+            builder.header(extraHeaders[i], extraHeaders[i + 1]);
+        }
         if (token != null) {
             builder.header("Authorization", "Bearer " + token);
         }

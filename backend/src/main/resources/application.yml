@@ -21,3 +21,6 @@ app:
   admin:
     # Empty = a random admin password is generated and logged once when the seeded admin still has the placeholder hash.
     initial-password: ${WELLNESS_ADMIN_PASSWORD:}
+  cors:
+    # Comma-separated origins of browser apps allowed to call the API (the Vite dev server by default).
+    allowed-origins: ${WELLNESS_CORS_ORIGINS:http://localhost:5173}

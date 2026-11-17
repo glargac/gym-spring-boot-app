@@ -78,6 +78,20 @@ class SecurityHttpTest {
     }
 
     @Test
+    void corsPreflightIsAnsweredWithoutATokenForTheAllowedOriginOnly() throws Exception {
+        var allowed = http.call("OPTIONS", "/api/users/1/preferences", null, null,
+                "Origin", "http://localhost:5173", "Access-Control-Request-Method", "PUT",
+                "Access-Control-Request-Headers", "authorization,content-type");
+        assertThat(allowed.statusCode()).isEqualTo(200);
+        assertThat(allowed.headers().firstValue("Access-Control-Allow-Origin")).hasValue("http://localhost:5173");
+
+        var other = http.call("OPTIONS", "/api/users/1/preferences", null, null,
+                "Origin", "http://evil.example", "Access-Control-Request-Method", "PUT");
+        assertThat(other.statusCode()).isEqualTo(403);
+        assertThat(other.headers().firstValue("Access-Control-Allow-Origin")).isEmpty();
+    }
+
+    @Test
     void aUserTokenCannotOpenTheAdminAccount() throws Exception {
         var user = http.register();
         String token = http.login(user[1], "s3cret-pass");

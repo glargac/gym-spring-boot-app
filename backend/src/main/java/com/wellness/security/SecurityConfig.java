@@ -3,6 +3,8 @@ package com.wellness.security;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.time.Duration;
+import java.util.List;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import org.slf4j.Logger;
@@ -11,6 +13,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -26,10 +29,13 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableMethodSecurity // turns on @PreAuthorize (see OwnerOrAdmin)
-@EnableConfigurationProperties({JwtProperties.class, AdminProperties.class})
+@EnableConfigurationProperties({JwtProperties.class, AdminProperties.class, CorsProperties.class})
 public class SecurityConfig {
 
     static final String ISSUER = "wellness-api";
@@ -40,6 +46,7 @@ public class SecurityConfig {
                                     JsonSecurityErrors errors) throws Exception {
         http
                 // CSRF protects cookie-based sessions. This API is stateless and reads a bearer header the browser never adds by itself.
+                .cors(Customizer.withDefaults()) // uses the CorsConfigurationSource bean below; runs BEFORE authentication
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
@@ -53,6 +60,23 @@ public class SecurityConfig {
                         .authenticationEntryPoint(errors)
                         .accessDeniedHandler(errors));
         return http.build();
+    }
+
+    /**
+     * CORS is a BROWSER rule: a page on one origin may not read responses from another unless the server says so.
+     * Without this bean the preflight (OPTIONS) request has no Authorization header, gets a 401, and the browser blocks the call.
+     * No credentials (cookies) are allowed: the API authenticates with a bearer header only.
+     */
+    @Bean
+    CorsConfigurationSource corsConfigurationSource(CorsProperties props) {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(props.allowedOrigins()); // explicit list, never "*" together with an Authorization header
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        config.setMaxAge(Duration.ofHours(1)); // browsers cache the preflight answer
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/api/**", config);
+        return source;
     }
 
     /** Maps the "role" claim ("ADMIN") to the authority ROLE_ADMIN, so hasRole('ADMIN') works. */
