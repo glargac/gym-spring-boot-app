@@ -25,6 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class RecommendationService {
 
+    /** Common safety floor for an unsupervised plan; a large deficit on a small person would otherwise go below it. */
+    static final int MIN_DAILY_KCAL = 1200;
+
     private final UserRepository users;
     private final UserPreferenceRepository preferences;
     private final HealthMetricsService health;
@@ -55,8 +58,17 @@ public class RecommendationService {
         WorkoutView workout = pickWorkout(pref, notes);
         MealPlan mealPlan = pickMealPlan(pref, notes);
 
-        Integer targetKcal = mealPlan == null ? null : (int) Math.round(metrics.tdee() + mealPlan.getKcalAdjust());
-        MealPlanView mealView = mealPlan == null ? null : toView(mealPlan);
+        Integer targetKcal = null;
+        MealPlanView mealView = null;
+        if (mealPlan != null) {
+            long raw = Math.round(metrics.tdee() + mealPlan.getKcalAdjust());
+            targetKcal = (int) Math.max(raw, MIN_DAILY_KCAL);
+            if (raw < MIN_DAILY_KCAL) {
+                notes.add("Your calculated target (" + raw + " kcal) is below the safe minimum, so it was raised to "
+                        + MIN_DAILY_KCAL + " kcal. Talk to a professional before eating less than that.");
+            }
+            mealView = toView(mealPlan, targetKcal);
+        }
         if (mealView != null) {
             notes.addAll(excludedFoodWarnings(pref.getExcludedFoods(), mealView));
         }
@@ -111,10 +123,17 @@ public class RecommendationService {
         return new WorkoutView(t.getName(), matchedBy, t.getDaysPerWeek(), days);
     }
 
-    private MealPlanView toView(MealPlan p) {
+    /**
+     * The stored kcal are proportions of a base day. Scaling every meal by target / baseTotal makes the plan add up
+     * to the user's own target instead of a fixed number that contradicts it.
+     */
+    private MealPlanView toView(MealPlan p, int targetKcal) {
+        int baseTotal = p.getMeals().stream().mapToInt(m -> m.getKcal()).sum();
+        double factor = baseTotal == 0 ? 1.0 : (double) targetKcal / baseTotal;
         List<MealView> meals = p.getMeals().stream()
-                .map(m -> new MealView(m.getMealType().name(), m.getDescription(), m.getKcal())).toList();
-        int total = meals.stream().mapToInt(MealView::kcal).sum();
-        return new MealPlanView(p.getName(), p.getKcalAdjust(), total, meals);
+                .map(m -> new MealView(m.getMealType().name(), m.getDescription(), (int) Math.round(m.getKcal() * factor)))
+                .toList();
+        int total = meals.stream().mapToInt(MealView::kcal).sum(); // may differ from the target by a few kcal of rounding
+        return new MealPlanView(p.getName(), p.getKcalAdjust(), total, Math.round(factor * 100) / 100.0, meals);
     }
 }

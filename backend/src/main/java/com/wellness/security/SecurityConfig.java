@@ -36,7 +36,8 @@ public class SecurityConfig {
     private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
 
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationConverter converter) throws Exception {
+    SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationConverter converter,
+                                    JsonSecurityErrors errors) throws Exception {
         http
                 // CSRF protects cookie-based sessions. This API is stateless and reads a bearer header the browser never adds by itself.
                 .csrf(csrf -> csrf.disable())
@@ -45,7 +46,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/users", "/api/health/assessment").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/goals", "/api/diet-types", "/api/training-locations").permitAll()
                         .anyRequest().authenticated()) // deny by default: a new endpoint is protected unless someone opens it on purpose
-                .oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.jwtAuthenticationConverter(converter)));
+                .oauth2ResourceServer(oauth -> oauth
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(converter))
+                        .authenticationEntryPoint(errors)
+                        .accessDeniedHandler(errors));
         return http.build();
     }
 

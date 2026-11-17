@@ -68,7 +68,10 @@ class SecurityHttpTest {
 
     @Test
     void protectedEndpointRejectsMissingAndGarbageTokens() throws Exception {
-        assertThat(call("GET", "/api/users/1/preferences", null, null).statusCode()).isEqualTo(401);
+        var noToken = call("GET", "/api/users/1/preferences", null, null);
+        assertThat(noToken.statusCode()).isEqualTo(401);
+        assertThat(noToken.body()).contains("\"status\":401"); // JSON problem body, same shape as the other errors
+        assertThat(noToken.headers().firstValue("WWW-Authenticate")).hasValue("Bearer");
         assertThat(call("GET", "/api/users/1/preferences", "not.a.jwt", null).statusCode()).isEqualTo(401);
     }
 
@@ -93,7 +96,9 @@ class SecurityHttpTest {
 
         // 404 = authorised, there just are no preferences yet
         assertThat(call("GET", "/api/users/" + a[0] + "/preferences", tokenA, null).statusCode()).isEqualTo(404);
-        assertThat(call("GET", "/api/users/" + b[0] + "/preferences", tokenA, null).statusCode()).isEqualTo(403);
+        var forbidden = call("GET", "/api/users/" + b[0] + "/preferences", tokenA, null);
+        assertThat(forbidden.statusCode()).isEqualTo(403);
+        assertThat(forbidden.body()).contains("\"status\":403");
         assertThat(call("GET", "/api/users/" + b[0] + "/recommendation", tokenA, null).statusCode()).isEqualTo(403);
     }
 

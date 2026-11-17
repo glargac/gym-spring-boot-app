@@ -3,6 +3,7 @@ package com.wellness.workout;
 import com.wellness.catalog.Goal;
 import com.wellness.catalog.TrainingLocation;
 import jakarta.persistence.Column;
+import org.hibernate.annotations.BatchSize;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -41,6 +42,7 @@ public class WorkoutTemplate {
     // mappedBy = the FK lives in workout_day; this side is not the owner. Lazy by default (N+1 risk when iterated in a loop).
     @OneToMany(mappedBy = "template")
     @OrderBy("dayIndex")
+    @BatchSize(size = 50) // loads the days of up to 50 templates in one query instead of one query per template
     private List<WorkoutDay> days = new ArrayList<>();
 
     protected WorkoutTemplate() {}

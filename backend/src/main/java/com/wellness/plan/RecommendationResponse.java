@@ -17,7 +17,8 @@ public record RecommendationResponse(
 
     public record ExerciseView(String name, int sets, String reps) {}
 
-    public record MealPlanView(String name, int kcalAdjust, int totalKcal, List<MealView> meals) {}
+    /** kcal in meals are already scaled to the user's target; portionFactor says by how much the stored plan was scaled. */
+    public record MealPlanView(String name, int kcalAdjust, int totalKcal, double portionFactor, List<MealView> meals) {}
 
     public record MealView(String type, String description, int kcal) {}
 }

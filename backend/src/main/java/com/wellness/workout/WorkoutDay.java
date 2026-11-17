@@ -1,6 +1,7 @@
 package com.wellness.workout;
 
 import jakarta.persistence.Column;
+import org.hibernate.annotations.BatchSize;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -34,6 +35,7 @@ public class WorkoutDay {
 
     @OneToMany(mappedBy = "day")
     @OrderBy("id") // without an explicit order the DB may return rows in any order
+    @BatchSize(size = 50) // all three days' exercises load in one query: the N+1 fix that avoids MultipleBagFetchException
     private List<WorkoutExercise> exercises = new ArrayList<>();
 
     protected WorkoutDay() {}
